@@ -39,45 +39,68 @@ A production-ready full-stack platform connecting environmentally conscious citi
 ## Application Flow
 
 ```mermaid
-flowchart TD
-    A[User Registers / Logs In] --> B{Select Role}
-    B -->|Citizen| C[User Dashboard]
-    B -->|Vendor| D[Vendor Dashboard]
+flowchart LR
+    subgraph AUTH ["🔐 Authentication Layer"]
+        A1[Register / Login] --> A2{Role Selection}
+        A2 -->|Citizen| A3[👤 User Portal]
+        A2 -->|Vendor| A4[🏭 Vendor Portal]
+    end
 
-    C --> E[Create E-Waste Listing]
-    E --> F[Upload Photos & Details]
-    F --> G[Cloudinary Storage]
-    G --> H[Listing Published]
+    subgraph LISTING ["📦 Listing & Discovery"]
+        A3 --> B1[Create E-Waste Listing]
+        B1 --> B2[📸 Upload Photos]
+        B2 --> B3[(Cloudinary CDN)]
+        B3 --> B4[✅ Listing Published]
 
-    H --> I[Vendors Browse Listings]
-    D --> I
-    I --> J[Place Bid on Listing]
-    J --> K[Bid Submitted]
+        A4 --> C1[🔍 Browse Listings]
+        B4 -.->|WebSocket| C1
+        C1 --> C2[📊 Geo-Filter & Category Filter]
+    end
 
-    K --> L[User Reviews Bids]
-    L --> M{Accept Bid?}
-    M -->|Yes| N[Listing Status: Closed]
-    M -->|No| J
+    subgraph BIDDING ["💰 Bidding Engine"]
+        C2 --> D1[Place Bid]
+        D1 --> D2[(Pending Bid)]
+        D2 -.->|Live Notification| D3[🔔 Citizen Alert]
+        D3 --> A3
+    end
 
-    N --> O[Order Auto-Created]
-    O --> P[Vendor Schedules Pickup]
-    P --> Q[Real-Time GPS Tracking]
-    Q --> R[Pickup Completed]
+    subgraph TRANSACTION ["⚡ Atomic Transaction"]
+        D1 --> E1{Accept Bid?}
+        E1 -->|Yes| E2[🔒 Listing Closed]
+        E2 --> E3[❌ Other Bids Rejected]
+        E3 --> E4[📋 Order Auto-Created]
+        E1 -->|No| D1
+    end
 
-    R --> S[User Reviews Vendor]
-    S --> T[Trust Score Updated]
-    T --> U[Django Signals]
-    U --> V[Vendor Reputation Built]
+    subgraph FULFILLMENT ["🚚 Pickup & Fulfillment"]
+        E4 --> F1[📅 Schedule Pickup]
+        F1 --> F2[📍 Real-Time GPS Tracking]
+        F2 --> F3[🔐 OTP Verification]
+        F3 --> F4[✅ Pickup Completed]
+    end
 
-    classDef user fill:#e1f5fe,stroke:#01579b
-    classDef vendor fill:#fff3e0,stroke:#e65100
-    classDef system fill:#e8f5e9,stroke:#2e7d32
-    classDef decision fill:#fce4ec,stroke:#880e4f
+    subgraph TRUST ["⭐ Trust & Reputation"]
+        F4 --> G1[📝 Citizen Review]
+        G1 --> G2[📊 Trust Score Recalculated]
+        G2 -->|Django Signal| G3[(Vendor Reputation)]
+        G3 -.->|Boosts Visibility| C1
+    end
 
-    class A,B,C,E,F,H,L,M user
-    class D,I,J,K,N,O,P,R,S,T,V vendor
-    class G,Q,U system
-    class M decision
+    classDef auth fill:#1e1e2e,stroke:#89b4fa,color:#cdd6f4,stroke-width:2px
+    classDef listing fill:#1e1e2e,stroke:#a6e3a1,color:#cdd6f4,stroke-width:2px
+    classDef bidding fill:#1e1e2e,stroke:#f9e2af,color:#cdd6f4,stroke-width:2px
+    classDef transaction fill:#1e1e2e,stroke:#f38ba8,color:#cdd6f4,stroke-width:2px
+    classDef fulfillment fill:#1e1e2e,stroke:#94e2d5,color:#cdd6f4,stroke-width:2px
+    classDef trust fill:#1e1e2e,stroke:#cba6f7,color:#cdd6f4,stroke-width:2px
+    classDef decision fill:#313244,stroke:#fab387,color:#cdd6f4,stroke-width:2px,stroke-dasharray: 5 5
+
+    class A1,A2,A3,A4 auth
+    class B1,B2,B3,B4,C1,C2 listing
+    class D1,D2,D3 bidding
+    class E1,E2,E3,E4 transaction
+    class F1,F2,F3,F4 fulfillment
+    class G1,G2,G3 trust
+    class E1 decision
 ```
 
 ### Flow Steps
