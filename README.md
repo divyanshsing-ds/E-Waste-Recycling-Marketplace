@@ -38,6 +38,9 @@ A production-ready full-stack platform connecting environmentally conscious citi
 
 ## Application Flow
 
+### 📡 Engine Architecture & Data Flow
+
+#### High-Level Lifecycle
 ```mermaid
 flowchart LR
     subgraph AUTH ["🔐 Authentication Layer"]
@@ -101,6 +104,49 @@ flowchart LR
     class F1,F2,F3,F4 fulfillment
     class G1,G2,G3 trust
     class E1 decision
+```
+
+#### Technical Sequence: Real-Time Handover & Verification
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Citizen (Seller)
+    participant B as DRF Backend
+    participant WS as WebSocket Layer
+    participant V as Vendor (Recycler)
+
+    Note over U,V: 1. Discovery & Intent
+    U->>B: POST /api/listings/ (Form Data)
+    B-)WS: Signal: 'new_listing' (Listing ID)
+    WS-)V: Push nearby notification
+
+    Note over V,B: 2. Bidding Cycle
+    V->>B: POST /api/bids/ (amount, message)
+    B-)WS: Notification: 'bid_placed'
+    WS-)U: UI Toast: "New offer of $50 RECEIVED!"
+
+    Note over U,B: 3. Atomic Transaction (Secure)
+    U->>B: POST /api/bids/{id}/accept/
+    Note over B: DRF Transaction Context Activated
+    activate B
+    B->>B: Lock Listing (closed)
+    B->>B: Bulk Reject competing bids
+    B->>B: Generate Secure 6-Digit OTP
+    B->>B: Create Order Instance
+    B->>B: COMMIT TRANSACTION
+    deactivate B
+    B-)WS: Signal: 'order_assigned'
+    WS-xV: Mission Alert: "Bid Accepted!"
+
+    Note over V,U: 4. Extraction & OTP Logic
+    V->>B: PATCH /api/orders/{id}/location/ (GPS)
+    B-)WS: Broadcast Live Telemetry
+    WS-)U: Move Driver Mapping Marker
+    V->>B: POST /api/orders/{id}/verify_otp/ {otp}
+    Note right of B: Backend validates match
+    B-->>V: 200 OK (Handover Verified)
+    B-)WS: Final Signal: 'otp_verified'
+    WS-)U: SUCCESS: Capture Confirmed!
 ```
 
 ### Flow Steps
