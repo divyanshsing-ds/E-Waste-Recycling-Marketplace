@@ -40,44 +40,6 @@ A production-ready full-stack platform connecting environmentally conscious citi
 
 ### 📡 Engine Architecture & Data Flow
 
-    Citizen([👤 CITIZEN]) -->|POST| Listing{ITEM LISTING}
-    Listing -->|VERIFIED| Market{MARKETPLACE}
-    Market -.->|BROADCAST| Recycler([🛠️ RECYCLER])
-
-    subgraph Discovery ["📦 DISCOVERY"]
-        Listing
-        Market
-    end
-
-    %% Bidding Stage
-    Recycler -->|COMPETITIVE BID| Auction{LIVE AUCTION}
-    Auction -.->|REAL-TIME ALERT| Citizen
-    Citizen -->|SECURE ACCEPTANCE| Lock{{ATOMIC LOCK}}
-
-    subgraph Transaction ["⚡ TRANSACTION"]
-        Auction
-        Lock
-    end
-
-    %% Fulfillment Stage
-    Lock -->|GENERATE| Order[🚚 ACTIVE ORDER]
-    Order -->|PUSH| GPS[📡 GPS TELEMETRY]
-    GPS -->|HANDOVER| OTP((🔢 6-DIGIT OTP))
-    OTP -->|COMPLETE| Impact[🌍 IMPACT LOG]
-
-    subgraph Fulfillment ["🚛 FULFILLMENT"]
-        Order
-        GPS
-        OTP
-    end
-
-    %% Final Styling
-    class Citizen,Recycler highlight
-    class Listing,Auction,Order action
-    class Lock,OTP critical
-    class Discovery,Transaction,Fulfillment default
-```
-
 #### Technical Sequence: Real-Time Handover & Verification
 ```mermaid
 sequenceDiagram
