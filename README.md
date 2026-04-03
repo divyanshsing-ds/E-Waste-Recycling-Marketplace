@@ -40,16 +40,6 @@ A production-ready full-stack platform connecting environmentally conscious citi
 
 ### 📡 Engine Architecture & Data Flow
 
-#### High-Level Lifecycle
-```mermaid
-flowchart LR
-    %% Global Design
-    classDef default fill:#0b0f19,stroke:#1e293b,color:#cbd5e1,font-family:Inter,font-weight:bold
-    classDef highlight fill:#064e3b,stroke:#059669,color:#ecfdf5,stroke-width:2px
-    classDef action fill:#0f172a,stroke:#38bdf8,color:#f1f5f9,stroke-width:2px
-    classDef critical fill:#450a0a,stroke:#b91c1c,color:#fee2e2,stroke-width:2px
-
-    %% Discovery Stage
     Citizen([👤 CITIZEN]) -->|POST| Listing{ITEM LISTING}
     Listing -->|VERIFIED| Market{MARKETPLACE}
     Market -.->|BROADCAST| Recycler([🛠️ RECYCLER])
