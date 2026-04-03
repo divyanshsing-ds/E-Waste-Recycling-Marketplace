@@ -28,3 +28,17 @@ export const useUpdateOrderStatus = () => {
     },
   })
 }
+
+export const useVerifyOTP = () => {
+  const queryClient = useQueryClient()
+  return useMutation(({ id, otp }) => ordersApi.verifyOTP(id, otp), {
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries(['order', variables.id])
+      queryClient.invalidateQueries('orders')
+      toast.success('Pickup verified and confirmed via OTP!')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.error || 'Invalid OTP code')
+    }
+  })
+}

@@ -43,22 +43,22 @@ const MyPickups = () => {
                     </div>
                  </div>
 
-                   <div className="flex flex-wrap gap-4 w-full md:w-auto mt-4 md:mt-0">
+                   <div className="flex flex-wrap gap-4 w-full md:w-auto mt-4 md:mt-0 items-center">
                       <button 
                           onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.listing.pickup_address)}`, '_blank')} 
                           className="flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.02] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 flex-grow md:flex-grow-0"
                       >
-                         <NavigationIcon size={16} className="text-teal-400" /> Ping Location
+                         <NavigationIcon size={16} className="text-teal-400" /> Ping
                       </button>
                       
                       {order.status === 'pending' && (
                         <button 
                            onClick={() => handleUpdate(order.id, 'in_transit')} 
                            disabled={loadingId === order.id}
-                           className="flex items-center justify-center gap-2 px-6 py-3 bg-teal-500 text-[#050505] disabled:bg-teal-500/50 disabled:opacity-50 font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(20,184,166,0.3)] active:scale-95 transition-all flex-grow md:flex-grow-0"
+                           className="flex items-center justify-center gap-2 px-8 py-3 bg-teal-500 text-[#050505] disabled:bg-teal-500/50 disabled:opacity-50 font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(20,184,166,0.3)] active:scale-95 transition-all flex-grow md:flex-grow-0"
                         >
                            {loadingId === order.id ? <Loader2Icon size={16} className="animate-spin" /> : <TruckIcon size={16} />}
-                           Initiate Transit
+                           Start Transit
                         </button>
                       )}
 
@@ -66,31 +66,38 @@ const MyPickups = () => {
                         <button 
                            onClick={() => handleUpdate(order.id, 'reached')} 
                            disabled={loadingId === order.id}
-                           className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 text-[#050505] disabled:bg-amber-500/50 disabled:opacity-50 font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95 transition-all flex-grow md:flex-grow-0"
+                           className="flex items-center justify-center gap-2 px-8 py-3 bg-amber-500 text-[#050505] disabled:bg-amber-500/50 disabled:opacity-50 font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95 transition-all flex-grow md:flex-grow-0"
                         >
                            {loadingId === order.id ? <Loader2Icon size={16} className="animate-spin" /> : <TargetIcon size={16} />}
-                           Arrived at Target
+                           At Target
                         </button>
                       )}
 
                       {order.status === 'reached' && (
-                        <button 
-                           onClick={() => handleUpdate(order.id, 'picked_up')} 
-                           disabled={loadingId === order.id}
-                           className="flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 text-[#050505] disabled:bg-emerald-500/50 disabled:opacity-50 font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95 transition-all flex-grow md:flex-grow-0"
-                        >
-                           {loadingId === order.id ? <Loader2Icon size={16} className="animate-spin" /> : <ZapIcon size={16} />}
-                           Confirm Extraction
-                        </button>
+                        <div className="flex items-center gap-2 bg-white/5 p-1 rounded-2xl border border-white/10 animate-in zoom-in duration-300">
+                          <input 
+                            type="text" 
+                            maxLength={6}
+                            placeholder="6-DIGIT OTP"
+                            value={otps[order.id] || ''}
+                            onChange={(e) => setOtps({...otps, [order.id]: e.target.value.replace(/\D/g, '')})}
+                            className="w-24 bg-transparent border-none text-center text-white font-black tracking-[0.2em] outline-none placeholder:text-slate-600 placeholder:text-[8px] placeholder:tracking-normal"
+                          />
+                          <button 
+                              onClick={() => handleVerify(order.id)} 
+                              disabled={loadingId === order.id || (otps[order.id]?.length !== 6)}
+                              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-500 text-[#050505] disabled:bg-emerald-500/50 disabled:opacity-50 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-emerald-400 transition-all shadow-lg active:scale-95"
+                          >
+                              {loadingId === order.id ? <Loader2Icon size={14} className="animate-spin" /> : <ShieldCheckIcon size={14} />}
+                              Verify
+                          </button>
+                        </div>
                       )}
 
                       {order.status === 'picked_up' && (
-                        <button 
-                           disabled
-                           className="flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.02] border border-emerald-500/20 text-emerald-500 rounded-2xl font-black text-xs uppercase tracking-widest cursor-not-allowed opacity-80 flex-grow md:flex-grow-0"
-                        >
-                           <CheckIcon size={16} className="drop-shadow-[0_0_5px_#10b981]" /> Target Secured
-                        </button>
+                        <div className="flex items-center gap-3 px-6 py-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl font-black text-xs uppercase tracking-widest animate-in fade-in slide-in-from-right-4">
+                            <ZapIcon size={16} className="fill-emerald-500 shadow-[0_0_10px_#10b981]" /> Verified Extraction
+                        </div>
                       )}
                    </div>
               </div>

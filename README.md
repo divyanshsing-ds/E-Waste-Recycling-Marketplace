@@ -1,30 +1,42 @@
-# E-Waste Recycling Marketplace
+# VoltSwap | E-Waste Recycling Marketplace
 
-A production-ready full-stack platform connecting environmentally conscious citizens with certified e-waste recyclers. Users can list electronic waste, vendors can bid on items, and the system manages the entire pickup and recycling workflow with real-time tracking.
+A production-ready full-stack platform connecting environmentally conscious citizens with certified e-waste recyclers. Users list electronic waste for recycling, vendors bid on listings, and the system manages the entire pickup workflow with real-time GPS tracking, OTP verification, and a vendor trust scoring system.
 
-## 🚀 Features
+**Frontend Branded As:** VoltSwap -- The Global Hardware Exchange
 
-### User Features
-- **List E-Waste**: Post electronic items for recycling with photos and descriptions
-- **Track Pickups**: Real-time GPS tracking of vendor pickups
-- **Review Vendors**: Rate and review vendors to build community trust
-- **Dashboard**: Personal dashboard to manage listings and track orders
+## Features
+
+### User (Citizen) Features
+- **List E-Waste**: Post electronic items with photos, descriptions, category, and condition
+- **Manage Listings**: View, edit, and delete your listings with auto-incrementing view counts
+- **Review Bids**: Compare vendor bids on your listings
+- **Accept Bids**: One-click acceptance atomically closes listing, rejects other bids, and auto-creates an order
+- **Track Pickups**: Real-time GPS tracking of vendor pickups on Google Maps
+- **OTP Verification**: Secure pickup confirmation with one-time passwords
+- **Review Vendors**: Rate vendors (1-5 stars) with comments after pickup completion
+- **Dashboard**: Personal dashboard to manage all listings and orders
 
 ### Vendor Features
-- **Browse Listings**: View available e-waste items with filtering
-- **Place Bids**: Compete for listings with competitive pricing
-- **Pickup Management**: Schedule and manage pickup routes
-- **Trust Score**: Build reputation through positive reviews
+- **Browse Listings**: Filter open listings by category, status, and geographic proximity
+- **Place Bids**: Submit competitive pricing (one bid per vendor per listing; re-bidding updates)
+- **Manage Pickups**: View assigned orders and update status through the full lifecycle
+- **GPS Tracking**: Push real-time location for citizen tracking
+- **OTP Verification**: Confirm pickups with citizen-provided OTP
+- **Trust Score**: Build reputation through positive reviews (auto-calculated average rating)
 
 ### Platform Features
-- **Role-Based Access**: Separate permissions for users and vendors
-- **JWT Authentication**: Secure login with token refresh
-- **Bidding Engine**: Atomic bid acceptance with automatic order creation
-- **Real-Time Updates**: WebSocket support for live notifications
+- **Role-Based Access Control**: Separate permissions for citizens (`IsUser`) and vendors (`IsVendor`)
+- **JWT Authentication**: Secure login with 15-min access tokens, 7-day refresh tokens, and automatic rotation
+- **Atomic Bid Acceptance**: Django `transaction.atomic()` ensures listing closure, bid acceptance, other bid rejection, and order creation happen as one atomic operation
+- **Real-Time WebSocket Notifications**: Django Channels consumer for live bid updates, status changes, and location updates
 - **Image Uploads**: Cloudinary integration for listing photos
-- **Trust System**: Vendor scoring based on user reviews
+- **Vendor Trust System**: Django `post_save` signal on Review automatically recalculates vendor scores
+- **Geographic Filtering**: Haversine distance calculation for nearby listings
+- **API Rate Throttling**: 100/hour anonymous, 1000/hour authenticated, 10/hour for bid creation
+- **Model History Tracking**: `django-simple-history` on Listing and Order models
+- **Swagger/OpenAPI Docs**: Auto-generated interactive API documentation
 
-## 🔄 Application Flow
+## Application Flow
 
 ```mermaid
 flowchart TD
@@ -78,69 +90,248 @@ flowchart TD
 6. **Pickup Execution**: Vendor schedules pickup with real-time GPS tracking via Google Maps
 7. **Review & Trust**: After completion, citizen reviews vendor; trust score updates via Django signals
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
-- **Framework**: Django REST Framework
-- **Authentication**: SimpleJWT
-- **Database**: PostgreSQL (Supabase-ready) / SQLite (development)
-- **Real-Time**: Django Channels (WebSockets)
-- **Image Storage**: Cloudinary
-- **Static Files**: WhiteNoise
-- **API Documentation**: drf-spectacular (Swagger/OpenAPI)
+| Category | Technology |
+|---|---|
+| Framework | Django 4.x + Django REST Framework |
+| Authentication | djangorestframework-simplejwt (JWT with access + refresh tokens) |
+| Database | PostgreSQL (production via Supabase) / SQLite (development) |
+| Real-Time | Django Channels + Daphne (ASGI server for WebSockets) |
+| Image Storage | Cloudinary |
+| Static Files | WhiteNoise (production) |
+| API Documentation | drf-spectacular (Swagger/OpenAPI) |
+| Filtering | django-filter |
+| Model History | django-simple-history |
+| Config Management | python-dotenv, dj-database-url |
+| Linting | flake8 |
+| Testing | pytest (pytest-django) |
+| Deployment | Gunicorn + Procfile (Heroku/Railway/Render) |
+| Python Version | 3.11.9 |
 
 ### Frontend
-- **Framework**: React 18 + Vite
-- **Styling**: Tailwind CSS + HeadlessUI
-- **State Management**: Zustand (auth) + React Query (data)
-- **Routing**: React Router v6
-- **Maps**: @react-google-maps/api
-- **Animations**: Framer Motion
-- **Forms**: React Hook Form
-- **Notifications**: React Hot Toast
-- **Icons**: Lucide React + Heroicons
+| Category | Technology |
+|---|---|
+| Framework | React 18 |
+| Build Tool | Vite 5 |
+| Styling | Tailwind CSS 3 + HeadlessUI + @tailwindcss/forms |
+| State Management | Zustand (with persist middleware, sessionStorage-backed) |
+| Data Fetching | React Query 3 (with optimistic updates) |
+| Routing | React Router v6 |
+| HTTP Client | Axios (with JWT interceptors and auto-refresh) |
+| Maps | @react-google-maps/api |
+| Animations | Framer Motion |
+| Forms | React Hook Form |
+| File Upload | react-dropzone |
+| Notifications | React Hot Toast |
+| Icons | Lucide React + Heroicons |
+| Utilities | clsx, tailwind-merge, date-fns, react-loading-skeleton |
+| Linting | ESLint (with React plugins) |
+| Formatting | Prettier (+ prettier-plugin-tailwindcss) |
+| Fonts | Outfit + Inter (Google Fonts) |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 E-Waste Recycling Marketplace/
 ├── backend/
+│   ├── .env                          # Environment variables (secrets)
+│   ├── .env.example                  # Template for env vars
+│   ├── .flake8                       # Flake8 linting config
+│   ├── db.sqlite3                    # Development SQLite database
+│   ├── manage.py                     # Django management script
+│   ├── Procfile                      # Deployment: gunicorn config
+│   ├── pytest.ini                    # Pytest configuration
+│   ├── runtime.txt                   # Python 3.11.9
 │   ├── apps/
-│   │   ├── users/          # User management, auth, permissions
-│   │   ├── listings/       # E-waste listing CRUD and filtering
-│   │   ├── bids/           # Vendor bidding system
-│   │   ├── orders/         # Order management and tracking
-│   │   ├── reviews/        # Vendor review and trust scoring
-│   │   └── realtime/       # WebSocket consumers for live updates
+│   │   ├── users/                    # Custom user model, auth, permissions
+│   │   │   ├── models.py             # CustomUser (UUID PK, email auth, role-based)
+│   │   │   ├── views.py              # Register, Login (JWT), Profile, Public user
+│   │   │   ├── serializers.py        # Register, Token, UserProfile serializers
+│   │   │   ├── urls.py               # /auth/register/, /auth/login/, /auth/profile/, etc.
+│   │   │   ├── permissions.py        # IsVendor, IsUser, IsOwner
+│   │   │   └── admin.py              # CustomUserAdmin
+│   │   ├── listings/                 # E-waste listing CRUD
+│   │   │   ├── models.py             # Listing (category, condition, status, GPS, image)
+│   │   │   ├── views.py              # ListingViewSet (CRUD + image upload + geo filtering)
+│   │   │   ├── serializers.py        # ListingSerializer
+│   │   │   ├── urls.py               # DRF router
+│   │   │   ├── filters.py            # ListingFilter (category, status, nearby)
+│   │   │   └── admin.py              # ListingAdmin
+│   │   ├── bids/                     # Vendor bidding system
+│   │   │   ├── models.py             # Bid (listing FK, vendor FK, amount, status)
+│   │   │   ├── views.py              # BidViewSet (create, accept, reject + WS notifications)
+│   │   │   ├── serializers.py        # BidSerializer
+│   │   │   ├── urls.py               # DRF router
+│   │   │   └── admin.py              # BidAdmin
+│   │   ├── orders/                   # Order management and tracking
+│   │   │   ├── models.py             # Order (listing 1:1, bid 1:1, GPS, OTP, status)
+│   │   │   ├── views.py              # OrderViewSet (status, location, verify_otp, get_location)
+│   │   │   ├── serializers.py        # OrderSerializer, OrderLocationSerializer
+│   │   │   ├── urls.py               # DRF router
+│   │   │   └── admin.py              # OrderAdmin
+│   │   ├── reviews/                  # Vendor review and trust scoring
+│   │   │   ├── models.py             # Review + post_save signal for vendor_score
+│   │   │   ├── views.py              # ReviewViewSet
+│   │   │   ├── serializers.py        # ReviewSerializer
+│   │   │   ├── urls.py               # DRF router
+│   │   │   └── admin.py              # ReviewAdmin
+│   │   └── realtime/                 # WebSocket consumers
+│   │       ├── consumers.py          # NotificationConsumer (JWT-authenticated WS)
+│   │       └── routing.py            # ws/notifications/
 │   ├── config/
-│   │   └── settings/       # Split settings (development/production)
-│   ├── utils/
-│   │   ├── cloudinary_upload.py
-│   │   ├── geo.py          # Haversine distance calculations
-│   │   ├── pagination.py
-│   │   └── throttling.py
-│   ├── manage.py
-│   └── Procfile            # Deployment config
+│   │   ├── settings/
+│   │   │   ├── base.py               # Shared settings (INSTALLED_APPS, REST_FRAMEWORK, JWT, Cloudinary)
+│   │   │   ├── development.py        # DEBUG=True, SQLite, CORS for localhost:5173
+│   │   │   └── production.py         # DEBUG=False, PostgreSQL (dj-database-url), WhiteNoise, SSL/HSTS
+│   │   ├── urls.py                   # Root URL routing (admin, api/*, swagger docs)
+│   │   ├── asgi.py                   # ASGI config with Channels + WebSocket routing
+│   │   └── wsgi.py                   # WSGI config for Gunicorn
+│   └── utils/
+│       ├── cloudinary_upload.py      # Cloudinary upload/delete helpers
+│       ├── geo.py                    # Haversine distance calculation
+│       ├── pagination.py             # StandardResultsPagination (page_size=12)
+│       └── throttling.py             # BidRateThrottle (10/hour)
+│
 └── frontend/
-    ├── src/
-    │   ├── api/            # Axios instances and endpoint helpers
-    │   ├── components/     # Reusable UI components
-    │   ├── hooks/          # Custom hooks (GPS, React Query)
-    │   ├── pages/
-    │   │   ├── auth/       # Login/Register pages
-    │   │   ├── user/       # User dashboard pages
-    │   │   └── vendor/     # Vendor dashboard pages
-    │   ├── store/          # Zustand auth store
-    │   └── App.jsx
-    └── tailwind.config.js
+    ├── .env                          # VITE_API_BASE_URL, VITE_GOOGLE_MAPS_KEY
+    ├── .prettierrc                   # Prettier config
+    ├── index.html                    # HTML entry (title: "VoltSwap | The Global Hardware Exchange")
+    ├── package.json                  # Dependencies and scripts
+    ├── postcss.config.js             # PostCSS config
+    ├── tailwind.config.js            # Tailwind config (custom primary green palette)
+    ├── vite.config.js                # Vite config (port 5173, HMR)
+    └── src/
+        ├── main.jsx                  # React entry (QueryClient, Toaster)
+        ├── App.jsx                   # Router + all routes + ProtectedRoute + RealTimeNotification
+        ├── index.css                 # Tailwind imports, custom components (glass-panel, etc.)
+        ├── api/
+        │   ├── axiosInstance.js      # Axios with JWT interceptors + auto-refresh
+        │   ├── auth.js               # login, register, getProfile, updateProfile
+        │   ├── listings.js           # CRUD + image upload
+        │   ├── bids.js               # getBids, placeBid, acceptBid, rejectBid
+        │   ├── orders.js             # CRUD + location + OTP
+        │   └── reviews.js            # getReviews, createReview
+        ├── components/
+        │   ├── layout/
+        │   │   ├── Navbar.jsx
+        │   │   ├── Footer.jsx
+        │   │   └── ProtectedRoute.jsx  # Role-based route guard
+        │   ├── listings/
+        │   │   └── ListingCard.jsx
+        │   ├── maps/
+        │   │   └── LiveTrackingMap.jsx  # Google Maps with vendor + pickup markers
+        │   ├── orders/
+        │   │   └── StatusTimeline.jsx
+        │   ├── ui/
+        │   │   ├── Button.jsx
+        │   │   ├── Input.jsx
+        │   │   ├── EmptyState.jsx
+        │   │   ├── ErrorBoundary.jsx
+        │   │   └── RealTimeNotification.jsx  # WebSocket notification UI
+        │   └── bids/
+        ├── hooks/
+        │   ├── useAuth.js            # Auth store wrapper + useUpdateProfile mutation
+        │   ├── useListings.js        # useListings, useListing, useCreateListing, useDeleteListing
+        │   ├── useBids.js            # useListingBids, usePlaceBid (optimistic), useAcceptBid
+        │   ├── useOrders.js          # useOrders, useOrder, useUpdateOrderStatus, useVerifyOTP
+        │   ├── useGPS.js             # Geolocation watchPosition with throttling
+        │   └── useWebSocket.js       # WebSocket hook with auto-connect
+        ├── pages/
+        │   ├── Landing.jsx           # Futuristic dark-themed landing page
+        │   ├── NotFound.jsx
+        │   ├── auth/
+        │   │   ├── Login.jsx
+        │   │   └── Register.jsx
+        │   ├── user/
+        │   │   ├── Dashboard.jsx
+        │   │   ├── CreateListing.jsx
+        │   │   ├── MyListings.jsx
+        │   │   ├── ListingDetail.jsx
+        │   │   └── TrackPickup.jsx
+        │   └── vendor/
+        │       ├── VendorDashboard.jsx
+        │       ├── BrowseListings.jsx
+        │       └── MyPickups.jsx
+        └── store/
+            └── authStore.js          # Zustand store (multi-account, persist to sessionStorage)
 ```
 
-## 🏁 Getting Started
+## Database Models
+
+### CustomUser (`apps.users`)
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `email` | EmailField | Unique, login field |
+| `full_name` | CharField | User's full name |
+| `phone` | CharField | Contact number |
+| `avatar_url` | URLField | Profile picture |
+| `role` | CharField | `USER` or `VENDOR` |
+| `vendor_score` | FloatField | Average rating (default: 5.0) |
+| `total_reviews` | IntegerField | Review count (default: 0) |
+| `is_verified_vendor` | BooleanField | Vendor verification status |
+| `is_active` | BooleanField | Account active status |
+| `is_staff` | BooleanField | Admin access |
+
+### Listing (`apps.listings`)
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `user` | ForeignKey | Owner (CustomUser) |
+| `title` | CharField | Listing title |
+| `description` | TextField | Item description |
+| `category` | CharField | `phone`, `laptop`, `tv`, `appliance`, `other` |
+| `condition` | CharField | `good`, `fair`, `poor` |
+| `image_url` | URLField | Cloudinary image URL |
+| `pickup_lat` | DecimalField | Pickup latitude |
+| `pickup_lng` | DecimalField | Pickup longitude |
+| `pickup_address` | CharField | Pickup location address |
+| `status` | CharField | `open`, `closed`, `completed` |
+| `view_count` | IntegerField | Auto-incrementing view counter |
+
+### Bid (`apps.bids`)
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `listing` | ForeignKey | Target listing |
+| `vendor` | ForeignKey | Bidding vendor (CustomUser) |
+| `amount` | DecimalField | Bid amount |
+| `message` | TextField | Vendor message |
+| `status` | CharField | `pending`, `accepted`, `rejected` |
+
+### Order (`apps.orders`)
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `listing` | OneToOneField | Associated listing |
+| `bid` | OneToOneField | Accepted bid |
+| `vendor_lat` | DecimalField | Vendor current latitude |
+| `vendor_lng` | DecimalField | Vendor current longitude |
+| `vendor_last_seen` | DateTimeField | Last GPS update timestamp |
+| `status` | CharField | `pending`, `in_transit`, `reached`, `picked_up`, `completed` |
+| `scheduled_time` | DateTimeField | Pickup scheduled time |
+| `otp` | CharField | 6-character verification code |
+| `otp_verified` | BooleanField | OTP verification status |
+
+### Review (`apps.reviews`)
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `order` | OneToOneField | Associated order |
+| `reviewer` | ForeignKey | Review author (CustomUser) |
+| `reviewee` | ForeignKey | Reviewed vendor (CustomUser) |
+| `rating` | IntegerField | 1-5 star rating |
+| `comment` | TextField | Review text |
+
+## Getting Started
 
 ### Prerequisites
-- Python 3.10+
+- Python 3.11+
 - Node.js 18+
 - npm or yarn
+- PostgreSQL (for production) or SQLite (for development)
 
 ### Backend Setup
 
@@ -182,9 +373,11 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-- **API Root**: http://localhost:8000/api/
-- **Swagger Docs**: http://localhost:8000/api/docs/
-- **Admin Panel**: http://localhost:8000/admin/
+| Service | URL |
+|---|---|
+| API Root | http://localhost:8000/api/ |
+| Swagger Docs | http://localhost:8000/api/docs/ |
+| Admin Panel | http://localhost:8000/admin/ |
 
 ### Frontend Setup
 
@@ -200,7 +393,7 @@ npm install
 
 3. Configure environment variables:
 ```bash
-cp .env.example .env  # if available
+# Create .env file with required variables
 ```
 
 4. Start the development server:
@@ -208,91 +401,181 @@ cp .env.example .env  # if available
 npm run dev
 ```
 
-- **App URL**: http://localhost:5173/
+| Service | URL |
+|---|---|
+| App | http://localhost:5173/ |
 
-## 🔧 Environment Variables
+### Available Scripts
 
-### Backend (.env)
-| Variable | Description |
-|----------|-------------|
-| `SECRET_KEY` | Django security key |
-| `DJANGO_SETTINGS_MODULE` | `config.settings.development` or `config.settings.production` |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
-| `ALLOWED_HOSTS` | Comma-separated allowed hosts |
-| `CORS_ALLOWED_ORIGINS` | Comma-separated CORS origins |
+#### Frontend
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server (port 5173, HMR enabled) |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | ESLint check |
 
-## 📡 API Endpoints
+#### Backend
+| Command | Description |
+|---|---|
+| `python manage.py runserver` | Start Django development server |
+| `python manage.py migrate` | Run database migrations |
+| `python manage.py createsuperuser` | Create admin user |
+| `pytest` | Run test suite |
 
-### Authentication
-- `POST /api/auth/token/` - Login and get JWT tokens
-- `POST /api/auth/token/refresh/` - Refresh access token
-- `POST /api/auth/register/` - Register new user
+## Environment Variables
 
-### Users
-- `GET /api/users/me/` - Get current user profile
-- `PUT /api/users/me/` - Update profile
+### Backend (`.env`)
+| Variable | Description | Required |
+|---|---|---|
+| `DJANGO_SETTINGS_MODULE` | `config.settings.development` or `config.settings.production` | Yes |
+| `SECRET_KEY` | Django cryptographic secret key | Yes |
+| `DATABASE_URL` | PostgreSQL connection string (production) | Production only |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary account cloud name | Yes |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | Yes |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | Yes |
+| `ALLOWED_HOSTS` | Comma-separated allowed hosts | Yes |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
 
-### Listings
-- `GET /api/listings/` - List all e-waste listings (filterable)
-- `POST /api/listings/` - Create new listing
-- `GET /api/listings/{id}/` - Get listing details
-- `PUT /api/listings/{id}/` - Update listing
-- `DELETE /api/listings/{id}/` - Delete listing
+### Frontend (`.env`)
+| Variable | Description | Required |
+|---|---|---|
+| `VITE_API_BASE_URL` | Backend API base URL (default: `http://localhost:8000/api`) | Yes |
+| `VITE_GOOGLE_MAPS_KEY` | Google Maps JavaScript API key | Yes (for maps) |
+| `VITE_WS_HOST` | WebSocket server hostname | Optional |
+| `VITE_WS_PORT` | WebSocket server port | Optional |
 
-### Bids
-- `GET /api/bids/` - List bids
-- `POST /api/bids/` - Place a bid on a listing
-- `POST /api/bids/{id}/accept/` - Accept a bid (creates order)
+## API Endpoints
 
-### Orders
-- `GET /api/orders/` - List orders
-- `GET /api/orders/{id}/` - Get order details
-- `PUT /api/orders/{id}/status/` - Update order status
+### Authentication (`/api/auth/`)
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register/` | Register new user/vendor |
+| POST | `/api/auth/login/` | Login, returns JWT access + refresh tokens |
+| POST | `/api/auth/token/refresh/` | Refresh access token |
+| GET | `/api/auth/profile/` | Get current user profile (auth required) |
+| PATCH | `/api/auth/profile/` | Update current user profile |
+| GET | `/api/auth/users/<uuid:user_id>/` | Get public user profile |
 
-### Reviews
-- `GET /api/reviews/` - List reviews
-- `POST /api/reviews/` - Create review for vendor
-- `GET /api/vendors/{id}/reviews/` - Get vendor reviews
+### Listings (`/api/listings/`)
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/listings/` | List all listings (filterable: category, status, user, lat/lng/radius) |
+| POST | `/api/listings/` | Create new listing |
+| GET | `/api/listings/<id>/` | Get listing detail (increments view_count) |
+| PUT/PATCH | `/api/listings/<id>/` | Update listing |
+| DELETE | `/api/listings/<id>/` | Delete listing |
+| POST | `/api/listings/<id>/image/` | Upload image to Cloudinary |
 
-## 🧪 Testing
+### Bids (`/api/bids/`)
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/bids/` | List bids (filtered by listing; role-scoped) |
+| POST | `/api/bids/` | Place/update bid on listing |
+| POST | `/api/bids/<id>/accept/` | Accept bid (atomic: closes listing, rejects others, creates order) |
+| POST | `/api/bids/<id>/reject/` | Reject bid |
+
+### Orders (`/api/orders/`)
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/orders/` | List orders (role-scoped) |
+| GET | `/api/orders/<id>/` | Get order detail |
+| PATCH | `/api/orders/<id>/status/` | Update order status (vendor only) |
+| PATCH | `/api/orders/<id>/location/` | Push vendor GPS location (vendor only) |
+| GET | `/api/orders/<id>/get_location/` | Poll vendor's last-seen location |
+| POST | `/api/orders/<id>/verify_otp/` | Verify OTP and confirm pickup (vendor only) |
+
+### Reviews (`/api/reviews/`)
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/reviews/` | List reviews |
+| POST | `/api/reviews/` | Create review (auto-links reviewer/reviewee based on order) |
+
+### WebSocket
+| Path | Description |
+|---|---|
+| `ws/notifications/?token=<JWT>` | Real-time notification stream (bid updates, status changes, location updates) |
+
+### Admin & Docs
+| Path | Description |
+|---|---|
+| `/admin/` | Django admin panel |
+| `/api/docs/` | Swagger/OpenAPI interactive documentation |
+| `/api/schema/` | OpenAPI schema (JSON) |
+
+## Architecture
+
+### Key Patterns
+| Pattern | Implementation |
+|---|---|
+| **Monorepo** | Backend and frontend in single repository |
+| **REST API** | DRF ViewSets with routers for all resources |
+| **Service Layer** | API client modules in `frontend/src/api/` |
+| **Custom React Hooks** | Data fetching, GPS, WebSocket encapsulated in `hooks/` |
+| **State Management** | Zustand (auth/session), React Query (server state) |
+| **Protected Routes** | Role-based route guards in React Router |
+| **Optimistic UI Updates** | React Query `onMutate` for instant bid placement feedback |
+| **Atomic Transactions** | `transaction.atomic()` for bid acceptance flow |
+| **Signal-Based Side Effects** | Django `post_save` signal for vendor score recalculation |
+| **Event-Driven Notifications** | Django Channels WebSocket + `async_to_sync` for server-to-client messages |
+| **Split Settings** | Base/Development/Production Django settings pattern |
+| **Custom User Model** | Email-based authentication with UUID primary keys |
+| **Multi-Account Auth** | Zustand store supports multiple accounts with session switching |
+| **Glass Morphism UI** | Custom Tailwind components with backdrop-blur effects |
+
+### Authentication Flow
+- JWT via `djangorestframework-simplejwt` with 15-minute access tokens and 7-day refresh tokens
+- Custom token serializer embeds `role`, `full_name`, and `email` in the JWT payload
+- Frontend axios interceptor auto-attaches Bearer token and handles 401 responses by refreshing the token
+- WebSocket auth via JWT token passed as query string parameter
+- Frontend route protection via `ProtectedRoute` component checking `isAuthenticated` and `user.role`
+
+## Testing
 
 ### Backend
 ```bash
 cd backend
 pytest
 ```
+- Configured via `pytest.ini` with `DJANGO_SETTINGS_MODULE=config.settings.development`
+- Uses `--nomigrations` flag for faster test execution
+- Test discovery: `tests.py`, `test_*.py`, `*_tests.py`
 
 ### Frontend
 ```bash
 cd frontend
 npm run lint
 ```
+- ESLint with React plugins for code quality checks
+- Prettier with tailwindcss plugin for code formatting
 
-## 🚢 Deployment
+## Deployment
 
 ### Backend
-The backend is configured for deployment on platforms like Heroku, Railway, or Render:
-- `Procfile` is included for web process configuration
-- `runtime.txt` specifies Python version
-- Production settings use PostgreSQL and Cloudinary
+| Config | Details |
+|---|---|
+| **Target Platforms** | Heroku, Railway, Render |
+| **Process** | Gunicorn via `Procfile`: `web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
+| **Runtime** | Python 3.11.9 (`runtime.txt`) |
+| **Database** | PostgreSQL via `dj-database-url` with SSL required (Supabase-ready) |
+| **Static Files** | WhiteNoise (production) |
+| **Security** | DEBUG=False, SSL/HSTS headers, strict CORS |
 
 ### Frontend
-The frontend can be deployed on Vercel, Netlify, or any static hosting:
-```bash
-npm run build
-```
+| Config | Details |
+|---|---|
+| **Target Platforms** | Vercel, Netlify, any static hosting |
+| **Build** | `npm run build` (Vite production build) |
+| **Output** | `dist/` directory |
 
-## 📝 License
+## License
 
 This project is built for educational and environmental purposes.
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request

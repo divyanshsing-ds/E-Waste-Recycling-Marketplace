@@ -1,4 +1,5 @@
 import uuid
+import random
 from django.db import models
 from simple_history.models import HistoricalRecords
 
@@ -22,6 +23,8 @@ class Order(models.Model):
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     scheduled_time = models.DateTimeField(null=True, blank=True)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_verified = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

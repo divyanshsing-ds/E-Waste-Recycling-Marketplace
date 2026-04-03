@@ -34,11 +34,29 @@
   }
 
   .btn-primary {
-    @apply relative inline-flex items-center justify-center px-10 py-4 font-black rounded-2xl text-slate-950 bg-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:shadow-[0_0_30px_rgba(52,211,153,0.5)] hover:-translate-y-1 active:scale-95 transition-all duration-300 overflow-hidden;
+    @apply relative inline-flex items-center justify-center px-10 py-4 font-bold rounded-2xl text-slate-950 bg-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.2)] hover:shadow-[0_0_40px_rgba(52,211,153,0.5)] hover:-translate-y-1 active:scale-95 transition-all duration-500 overflow-hidden isolate;
+  }
+
+  .btn-primary::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full transition-transform duration-700;
+  }
+
+  .btn-primary:hover::before {
+    @apply translate-x-full;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-10 py-4 font-black rounded-2xl text-white bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:border-emerald-400/50 hover:bg-emerald-400/10 hover:-translate-y-1 active:scale-95 transition-all duration-300;
+    @apply relative inline-flex items-center justify-center px-10 py-4 font-bold rounded-2xl text-white bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:border-emerald-400/40 hover:bg-emerald-400/5 hover:-translate-y-1 active:scale-95 transition-all duration-500 overflow-hidden;
+  }
+
+  .btn-secondary::after {
+    content: '';
+    @apply absolute inset-0 bg-emerald-400/0 opacity-0 transition-all duration-500;
+  }
+
+  .btn-secondary:hover::after {
+    @apply bg-emerald-400/10 opacity-100;
   }
 
   .input-field {

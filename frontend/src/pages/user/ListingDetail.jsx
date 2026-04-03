@@ -43,94 +43,108 @@ const ListingDetail = () => {
   const bids = bidsResponse?.data?.results || []
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="max-w-6xl mx-auto px-8 py-16 animate-in fade-in duration-700">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         {/* Left: Images & Info */}
-        <div className="space-y-8">
-           <div className="aspect-video rounded-3xl bg-slate-100 overflow-hidden border border-slate-200">
-             <img src={listing.image_url || 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80&w=1200'} alt={listing.title} className="w-full h-full object-cover" />
+        <div className="lg:col-span-7 space-y-8 group">
+           <div className="aspect-video rounded-[2rem] bg-white/[0.02] overflow-hidden border border-white/[0.08] shadow-2xl relative">
+             <img src={listing.image_url || 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80&w=1200'} alt={listing.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
            </div>
            
-           <div className="glass-card p-8">
-              <h1 className="text-3xl font-black text-slate-900 mb-4">{listing.title}</h1>
-              <div className="flex flex-wrap gap-4 mb-6">
-                 <div className="flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-bold uppercase tracking-widest border border-primary-100">
+           <div className="glass-card p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                 <UserIcon size={100} className="text-emerald-500" />
+              </div>
+
+              <h1 className="text-3xl font-extrabold text-white mb-4 tracking-tight">{listing.title}</h1>
+              
+              <div className="flex flex-wrap gap-3 mb-6">
+                 <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                    {listing.category}
                  </div>
-                 <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 text-slate-600 rounded-full text-xs font-bold uppercase tracking-widest border border-slate-100">
+                 <div className="flex items-center gap-2 px-4 py-1.5 bg-white/5 text-slate-300 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/10">
                    {listing.condition} Condition
                  </div>
               </div>
-              <p className="text-slate-600 leading-relaxed text-lg mb-8">{listing.description}</p>
+
+              <p className="text-slate-400 leading-relaxed text-base mb-8 font-medium">{listing.description}</p>
               
-              <div className="space-y-4 border-t border-slate-100 pt-8">
-                 <div className="flex items-center gap-4 text-slate-600">
-                    <MapPinIcon size={20} className="text-slate-400" />
-                    <span className="font-medium">{listing.pickup_address}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-white/5">
+                 <div className="flex items-center gap-3 text-slate-300">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-slate-500">
+                      <MapPinIcon size={16} />
+                    </div>
+                    <span className="font-medium text-xs">{listing.pickup_address}</span>
                  </div>
-                 <div className="flex items-center gap-4 text-slate-600">
-                    <CalendarIcon size={20} className="text-slate-400" />
-                    <span className="font-medium">Listed on {format(new Date(listing.created_at), 'MMMM do, yyyy')}</span>
+                 <div className="flex items-center gap-3 text-slate-300">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-slate-500">
+                      <CalendarIcon size={16} />
+                    </div>
+                    <span className="font-medium text-xs">Listed {format(new Date(listing.created_at), 'MMM do, yyyy')}</span>
                  </div>
               </div>
            </div>
         </div>
 
         {/* Right: Bids & Vendor Actions */}
-        <div className="space-y-8">
+        <div className="lg:col-span-5 space-y-8">
            {isOwner ? (
-             <div className="glass-card p-8 bg-slate-900 text-white border-none shadow-2xl">
+             <div className="glass-card p-8 bg-slate-900/40 border border-white/5 shadow-2xl">
                 <div className="flex items-center justify-between mb-8">
-                   <h2 className="text-xl font-bold">Manage Listing</h2>
-                   <Button variant="danger" onClick={() => deleteListing(id, { onSuccess: () => navigate('/dashboard') })} className="py-2 px-4 text-xs gap-2">
-                     <TrashIcon size={14} /> Delete
+                   <h2 className="text-xl font-black text-white tracking-tight">Active Bids</h2>
+                   <Button variant="danger" onClick={() => deleteListing(id, { onSuccess: () => navigate('/dashboard') })} className="py-2 px-4 text-[9px] uppercase tracking-widest gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20">
+                     <TrashIcon size={12} /> Delete
                    </Button>
                 </div>
                 
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Bids Received</h3>
                 {listing.status === 'open' ? (
-                   <div className="space-y-4">
+                   <div className="space-y-3">
                       {bids.length > 0 ? bids.map(bid => (
-                        <div key={bid.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+                        <div key={bid.id} className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between transition-all hover:bg-white/[0.04] hover:border-emerald-500/30 group">
                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center font-bold text-primary-400 uppercase">
+                              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center font-black text-emerald-400 uppercase text-lg shadow-inner border border-emerald-500/20">
                                  {bid.vendor?.full_name?.[0] || 'V'}
                               </div>
                               <div>
-                                 <div className="font-bold">{bid.vendor?.full_name}</div>
-                                 <div className="text-xs text-slate-400">
-                                    {bid.vendor?.vendor_score} ★ • {bid.vendor?.total_reviews} reviews
+                                 <div className="font-bold text-white text-sm">{bid.vendor?.full_name}</div>
+                                 <div className="text-[10px] font-semibold text-slate-500 flex items-center gap-1.5">
+                                    <span className="text-emerald-400">★ {bid.vendor?.vendor_score}</span>
+                                    <span>•</span>
+                                    <span>{bid.vendor?.total_reviews} rev</span>
                                  </div>
                               </div>
                            </div>
                             <div className="text-right">
-                               <div className="text-xl font-black text-primary-400">
+                               <div className="text-xl font-black text-emerald-400 mb-1">
                                   ${bid.amount}
-                                  {bid.isOptimistic && <span className="ml-2 text-[8px] text-slate-400 animate-pulse uppercase">Sending...</span>}
                                </div>
                                 <Button 
                                   loading={acceptingBid || bid.isOptimistic}
                                   onClick={() => acceptBid(bid.id)} 
-                                  className="py-1 px-3 text-[10px] mt-2 bg-emerald-600 hover:bg-emerald-700"
+                                  className="py-1.5 px-4 text-[8px] uppercase tracking-wider bg-emerald-500 text-slate-950 hover:bg-emerald-400"
                                 >
-                                   Accept Bid
+                                   Accept
                                 </Button>
                             </div>
                         </div>
                       )) : (
-                        <div className="py-8 text-center text-slate-500 italic text-sm">No bids received yet.</div>
+                        <div className="py-12 text-center border-2 border-dashed border-white/5 rounded-2xl">
+                          <p className="text-slate-500 text-sm font-medium italic">No bids yet.</p>
+                        </div>
                       )}
                    </div>
                 ) : (
-                  <div className="p-8 text-center text-slate-400 font-medium">
-                     <CheckCircleIcon size={32} className="mx-auto mb-3 text-emerald-400" />
-                     Bidding closed. Order is in progress.
+                  <div className="p-12 text-center bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
+                     <CheckCircleIcon size={40} className="mx-auto mb-4 text-emerald-400 opacity-50" />
+                     <h3 className="text-lg font-bold text-white mb-1">Done</h3>
+                     <p className="text-slate-400 text-xs">Listing closed.</p>
                   </div>
                 )}
              </div>
            ) : isVendor && listing.status === 'open' ? (
-             <div className="glass-card p-8">
-                <h2 className="text-xl font-bold text-slate-900 mb-6">Place a Bid</h2>
+             <div className="glass-card p-8 bg-emerald-500/[0.02] border-emerald-500/10">
+                <h2 className="text-xl font-black text-white mb-6 tracking-tight">Bid</h2>
                 <form 
                   className="space-y-6"
                   onSubmit={(e) => {
@@ -142,25 +156,30 @@ const ListingDetail = () => {
                   }}
                 >
                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Bid Amount ($)</label>
-                      <input 
-                        name="amount"
-                        type="number" 
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" 
-                        placeholder="0.00" 
-                      />
+                      <label className="block text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2.5 ml-1">Amount ($)</label>
+                      <div className="relative">
+                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-400 font-bold">$</span>
+                        <input 
+                          name="amount"
+                          type="number" 
+                          required
+                          className="w-full pl-10 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white text-lg font-bold placeholder:text-slate-600 focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all duration-300" 
+                          placeholder="0.00" 
+                        />
+                      </div>
                    </div>
-                   <Button loading={placingBid} type="submit" className="w-full py-4 text-lg">Send Instant Bid</Button>
-                   <p className="text-xs text-slate-400 text-center">Your bid is legally binding upon acceptance.</p>
+                   <Button loading={placingBid} type="submit" className="w-full py-4 text-md">Submit Bid</Button>
+                   <div className="p-3 rounded-lg bg-white/5 border border-white/5 text-center">
+                     <p className="text-[8px] text-slate-600 tracking-tight uppercase">Your bid is legally binding.</p>
+                   </div>
                 </form>
              </div>
            ) : (
-             <div className="glass-card p-10 text-center">
-                <UserIcon size={40} className="mx-auto mb-4 text-slate-200" />
-                <h3 className="font-bold text-slate-800">Interested in recycling?</h3>
-                <p className="text-slate-500 text-sm mb-6">Log in as a verified recycler to bid on this item.</p>
-                <Link to="/login"><Button variant="secondary">Check out more items</Button></Link>
+             <div className="glass-card p-12 text-center relative overflow-hidden">
+                <UserIcon size={48} className="mx-auto mb-4 text-emerald-500/20" />
+                <h3 className="text-xl font-bold text-white mb-3">Bid now?</h3>
+                <p className="text-slate-400 text-sm mb-8">Verify your account to join.</p>
+                <Link to="/login"><Button variant="secondary" className="px-10">Login</Button></Link>
              </div>
            )}
         </div>

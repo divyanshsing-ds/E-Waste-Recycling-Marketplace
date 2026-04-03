@@ -82,6 +82,38 @@ class OrderViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsVendor])
+    @extend_schema(summary="Verify OTP and confirm pickup (Vendor only)")
+    def verify_otp(self, request, pk=None):
+        order = self.get_object()
+        otp = request.data.get("otp")
+        
+        if not otp:
+            return Response({"error": "OTP is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if order.status == "picked_up":
+            return Response({"error": "Order already picked up"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if order.otp == otp:
+            order.otp_verified = True
+            order.status = "picked_up"
+            order.save()
+            
+            # Notify the user (listing owner)
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"user_{order.listing.user.id}",
+                {
+                    "type": "notification_message",
+                    "message": f"Confirmed! Driver has picked up '{order.listing.title}' after verifying OTP.",
+                    "action": "otp_verified",
+                    "order_id": str(order.id)
+                }
+            )
+            return Response(OrderSerializer(order, context={'request': request}).data)
+        else:
+            return Response({"error": "Invalid verification code (OTP)"}, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True, methods=["get"])
     @extend_schema(summary="Poll vendor's last-seen location")
     def get_location(self, request, pk=None):
