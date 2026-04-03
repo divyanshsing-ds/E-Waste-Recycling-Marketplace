@@ -43,67 +43,49 @@ A production-ready full-stack platform connecting environmentally conscious citi
 #### High-Level Lifecycle
 ```mermaid
 flowchart LR
-    subgraph AUTH ["🔐 Authentication Layer"]
-        A1[Register / Login] --> A2{Role Selection}
-        A2 -->|Citizen| A3[👤 User Portal]
-        A2 -->|Vendor| A4[🏭 Vendor Portal]
+    %% Global Design
+    classDef default fill:#0b0f19,stroke:#1e293b,color:#cbd5e1,font-family:Inter,font-weight:bold
+    classDef highlight fill:#064e3b,stroke:#059669,color:#ecfdf5,stroke-width:2px
+    classDef action fill:#0f172a,stroke:#38bdf8,color:#f1f5f9,stroke-width:2px
+    classDef critical fill:#450a0a,stroke:#b91c1c,color:#fee2e2,stroke-width:2px
+
+    %% Discovery Stage
+    Citizen([👤 CITIZEN]) -->|POST| Listing{ITEM LISTING}
+    Listing -->|VERIFIED| Market{MARKETPLACE}
+    Market -.->|BROADCAST| Recycler([🛠️ RECYCLER])
+
+    subgraph Discovery ["📦 DISCOVERY"]
+        Listing
+        Market
     end
 
-    subgraph LISTING ["📦 Listing & Discovery"]
-        A3 --> B1[Create E-Waste Listing]
-        B1 --> B2[📸 Upload Photos]
-        B2 --> B3[(Cloudinary CDN)]
-        B3 --> B4[✅ Listing Published]
+    %% Bidding Stage
+    Recycler -->|COMPETITIVE BID| Auction{LIVE AUCTION}
+    Auction -.->|REAL-TIME ALERT| Citizen
+    Citizen -->|SECURE ACCEPTANCE| Lock{{ATOMIC LOCK}}
 
-        A4 --> C1[🔍 Browse Listings]
-        B4 -.->|WebSocket| C1
-        C1 --> C2[📊 Geo-Filter & Category Filter]
+    subgraph Transaction ["⚡ TRANSACTION"]
+        Auction
+        Lock
     end
 
-    subgraph BIDDING ["💰 Bidding Engine"]
-        C2 --> D1[Place Bid]
-        D1 --> D2[(Pending Bid)]
-        D2 -.->|Live Notification| D3[🔔 Citizen Alert]
-        D3 --> A3
+    %% Fulfillment Stage
+    Lock -->|GENERATE| Order[🚚 ACTIVE ORDER]
+    Order -->|PUSH| GPS[📡 GPS TELEMETRY]
+    GPS -->|HANDOVER| OTP((🔢 6-DIGIT OTP))
+    OTP -->|COMPLETE| Impact[🌍 IMPACT LOG]
+
+    subgraph Fulfillment ["🚛 FULFILLMENT"]
+        Order
+        GPS
+        OTP
     end
 
-    subgraph TRANSACTION ["⚡ Atomic Transaction"]
-        D1 --> E1{Accept Bid?}
-        E1 -->|Yes| E2[🔒 Listing Closed]
-        E2 --> E3[❌ Other Bids Rejected]
-        E3 --> E4[📋 Order Auto-Created]
-        E1 -->|No| D1
-    end
-
-    subgraph FULFILLMENT ["🚚 Pickup & Fulfillment"]
-        E4 --> F1[📅 Schedule Pickup]
-        F1 --> F2[📍 Real-Time GPS Tracking]
-        F2 --> F3[🔐 OTP Verification]
-        F3 --> F4[✅ Pickup Completed]
-    end
-
-    subgraph TRUST ["⭐ Trust & Reputation"]
-        F4 --> G1[📝 Citizen Review]
-        G1 --> G2[📊 Trust Score Recalculated]
-        G2 -->|Django Signal| G3[(Vendor Reputation)]
-        G3 -.->|Boosts Visibility| C1
-    end
-
-    classDef auth fill:#1e1e2e,stroke:#89b4fa,color:#cdd6f4,stroke-width:2px
-    classDef listing fill:#1e1e2e,stroke:#a6e3a1,color:#cdd6f4,stroke-width:2px
-    classDef bidding fill:#1e1e2e,stroke:#f9e2af,color:#cdd6f4,stroke-width:2px
-    classDef transaction fill:#1e1e2e,stroke:#f38ba8,color:#cdd6f4,stroke-width:2px
-    classDef fulfillment fill:#1e1e2e,stroke:#94e2d5,color:#cdd6f4,stroke-width:2px
-    classDef trust fill:#1e1e2e,stroke:#cba6f7,color:#cdd6f4,stroke-width:2px
-    classDef decision fill:#313244,stroke:#fab387,color:#cdd6f4,stroke-width:2px,stroke-dasharray: 5 5
-
-    class A1,A2,A3,A4 auth
-    class B1,B2,B3,B4,C1,C2 listing
-    class D1,D2,D3 bidding
-    class E1,E2,E3,E4 transaction
-    class F1,F2,F3,F4 fulfillment
-    class G1,G2,G3 trust
-    class E1 decision
+    %% Final Styling
+    class Citizen,Recycler highlight
+    class Listing,Auction,Order action
+    class Lock,OTP critical
+    class Discovery,Transaction,Fulfillment default
 ```
 
 #### Technical Sequence: Real-Time Handover & Verification
