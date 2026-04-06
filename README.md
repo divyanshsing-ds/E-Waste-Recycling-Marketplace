@@ -146,6 +146,7 @@ E-Waste Recycling Marketplace/
 │   ├── manage.py                     # Django management script
 │   ├── Procfile                      # Deployment: gunicorn config
 │   ├── pytest.ini                    # Pytest configuration
+│   ├── requirements.txt               # Backend dependencies
 │   ├── runtime.txt                   # Python 3.11.9
 │   ├── apps/
 │   │   ├── users/                    # Custom user model, auth, permissions
@@ -351,6 +352,8 @@ source venv/bin/activate  # Linux/Mac
 ```
 
 3. Install dependencies:
+   > [!IMPORTANT]
+   > Ensure your virtual environment is activated before installing.
 ```bash
 pip install -r requirements.txt
 ```
@@ -570,6 +573,23 @@ npm run lint
 | **Target Platforms** | Vercel, Netlify, any static hosting |
 | **Build** | `npm run build` (Vite production build) |
 | **Output** | `dist/` directory |
+
+## Troubleshooting
+
+### `ModuleNotFoundError: No module named 'rest_framework'`
+This usually happens if you run the server without activating the virtual environment. Ensure you have followed the setup steps:
+1.  Navigate to `backend/`.
+2.  Run `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Mac/Linux).
+3.  Run `python manage.py runserver`.
+
+Alternatively, run the server explicitly using the venv's python:
+`.\venv\Scripts\python manage.py runserver`
+
+### Database Errors (Missing Columns/Tables)
+If you see errors related to missing database columns (e.g., `no such column: orders_order.otp`), run the migrations:
+```bash
+python manage.py migrate
+```
 
 ## License
 
